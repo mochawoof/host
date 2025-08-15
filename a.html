@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="pure-min.css">
+  </head>
+  <body style="margin: 8px;">
+    <h1 id="heading"></h1>
+    <noscript><p>Please enable JavaScript!!!</p></noscript>
+    <table id="table" class="pure-table">
+        <thead>
+            <tr>
+                <th>File</th>
+                <th>Raw</th>
+                <th>Size</th>
+            </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+    </table>
+  </body>
+  <script>
+    let heading = document.querySelector("#heading");
+    let tbody = document.querySelector("#tbody");
+
+    fetch("https://api.github.com/repos/mochawoof/host/contents/").then(((res) => {
+        res.json().then((json) => {
+            Object.values(json).forEach((e) => {
+                let tr = document.createElement("tr");
+                let filetd = document.createElement("td");
+                    filetd.innerHTML = "<a href='" + e.html_url + "'>" + e.name + "</a>";
+                    tr.appendChild(filetd);
+                let rawtd = document.createElement("td");
+                    rawtd.innerHTML = "<a href='" + e.download_url + "'>" + e.name + "</a>";
+                    tr.appendChild(rawtd);
+                let sizetd = document.createElement("td");
+                    sizetd.innerHTML = e.size;
+                    tr.appendChild(sizetd);
+                tbody.appendChild(tr);
+            });
+        });
+    }));
+  </script>
+</html>
