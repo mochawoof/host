@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="pure-min.css">
+    </head>
+    <style>
+        body {
+            margin: 8px;
+        }
+        textarea {
+            overflow: auto;
+            white-space: pre;
+        }
+    </style>
+    <body>
+        <p><input type="file" id="input" multiple></p>
+        <p><textarea id="result" placeholder="Result" cols="50" rows="20"></textarea></p>
+        <p><button id="copy">Copy</button> <button id="clear">Clear</button> <select id="mode">
+            <option id="rawmode">Raw</option>
+            <option id="variablemode">Variable</option>
+            <option id="jsonmode">JSON</option>
+        </select></p>
+    </body>
+    <script>
+        let input = document.querySelector("#input");
+        let result = document.querySelector("#result");
+        let copy = document.querySelector("#copy");
+        let clear = document.querySelector("#clear");
+        let mode = document.querySelector("#mode");
+
+        input.onchange = (e) => {
+            for (let i = 0; i < input.files.length; i++) {
+                let file = input.files[i];
+                let filename = file.name.substring(0, file.name.lastIndexOf("."));
+
+                let reader = new FileReader();
+                reader.onload = (ev) => {
+                    let selected = mode.selectedOptions[0].id;
+                    if (selected == "rawmode") {
+                        result.value += reader.result + "\n";
+                    } else if (selected == "variablemode") {
+                        result.value += "let " + filename + " = \"" + reader.result + "\";\n";
+                    } else if (selected == "jsonmode") {
+                        result.value += filename + " : \"" + reader.result + "\",\n";
+                    }
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        copy.onclick = (e) => {
+            navigator.clipboard.writeText(result.value);
+        }
+        clear.onclick = (e) => {
+            result.value = "";
+        }
+    </script>
+</html>
