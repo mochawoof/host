@@ -9,17 +9,24 @@
         }
         #canvas {
             border: 1px solid #000;
+            background: #eee;
         }
     </style>
     <body>
         <p><canvas id="canvas" width="512" height="512"></canvas></p>
         <p><input type="number" id="width" value="512"> x <input type="number" id="height" value="512"></p>
         <p><input type="number" id="sides" value="6"> sides at zoom <input type="number" id="zoom" value="100"> at thickness <input type="number" id="thickness" value="2"></p>
-        <p>Make me <select id="shapeType">
-            <option id="shape">a Shape</option>
+        <p><select id="shapeType">
+            <option id="shape">Shape</option>
             <option id="quadrants">Quadrants</option>
-        </select></p>
-        <p><input type="text" id="dataurl" readonly> <button id="getdataurl">Get Data URL</button></p>
+        </select> <select id="background">
+            <option id="full">Full Background</option>
+            <option id="shape">Shape Background</option>
+            <option id="transparent">Transparent</option>
+        </select> <input type="color" id="shapeColor" value="#ffffff">
+        </p>
+        <p><input type="text" id="dataurl" readonly> <button onclick="getdataurl()">Get Data URL</button> <button onclick="copy()">Copy</button></p>
+        <p><button onclick="copyimage()">Copy Image</button> <button onclick="downloadimage()">Download</button></p>
     </body>
     <script>
         let canvas = document.querySelector("#canvas");
@@ -31,10 +38,29 @@
         let zoom = document.querySelector("#zoom");
         let thickness = document.querySelector("#thickness");
         let dataurl = document.querySelector("#dataurl");
-        let getdataurl = document.querySelector("#getdataurl");
+        let background = document.querySelector("#background");
+        let shapeColor = document.querySelector("#shapeColor");
 
-        getdataurl.onclick = () => {
+        function getdataurl() {
             dataurl.value = canvas.toDataURL();
+        }
+
+        function copy() {
+            navigator.clipboard.writeText(dataurl.value);
+        }
+
+        function copyimage() {
+            canvas.toBlob((blob) => {
+                navigator.clipboard.write([new ClipboardItem({[blob.type] : blob})]);
+            });
+        }
+
+        function downloadimage() {
+            let a = document.createElement("a");
+            a.href = canvas.toDataURL();
+            a.download = "shape.png";
+            a.click();
+            a.remove();
         }
 
         function rad(deg) {
@@ -44,26 +70,38 @@
         function update() {
             canvas.width = width.value;
             canvas.height = height.value;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.strokeStyle = "#000";
             ctx.lineWidth = thickness.value;
             ctx.resetTransform();
             //ctx.fillRect((canvas.width / 2) - 5, (canvas.height / 2) - 5, 10, 10);
-            ctx.translate(canvas.width / 2, canvas.height / 2);
 
-            for (let i = 0; i < sides.value; i++) {
-                ctx.beginPath();
+            ctx.fillStyle = shapeColor.value;
+            if (background.selectedOptions[0].id == "full") {
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+
+            ctx.translate(canvas.width / 2, canvas.height / 2);
+            ctx.beginPath();
+
+            for (let i = 0; i < sides.value + 1; i++) {
                 if (shapeType.selectedOptions[0].id == "shape") {
                     let c = zoom.value / Math.sin(rad(180 - 90 - (360 / sides.value / 2)));
                     let halfspan = Math.sqrt(c**2 - zoom.value**2);
-                    ctx.moveTo(halfspan, zoom.value);
+                    ctx.lineTo(halfspan, zoom.value);
                     ctx.lineTo(-halfspan, zoom.value);
                 } else {
                     ctx.moveTo(0, 0);
                     ctx.lineTo(0, canvas.height);
                 }
-                ctx.stroke();
+
                 ctx.rotate(rad(360 / sides.value));
             }
+            
+            if (background.selectedOptions[0].id == "shape") {
+                ctx.fill();
+            }
+            ctx.stroke();
 
             ctx.translate(-(canvas.width / 2), -(canvas.height / 2));
         }
@@ -73,6 +111,8 @@
         shapeType.oninput = update;
         zoom.oninput = update;
         thickness.oninput = update;
+        background.oninput = update;
+        shapeColor.oninput = update;
         update();
     </script>
 </html>
