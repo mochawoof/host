@@ -14,11 +14,12 @@
     <body>
         <p><canvas id="canvas" width="512" height="512"></canvas></p>
         <p><input type="number" id="width" value="512"> x <input type="number" id="height" value="512"></p>
-        <p><input type="number" id="sides" value="6"> sides</p>
+        <p><input type="number" id="sides" value="6"> sides at zoom <input type="number" id="zoom" value="100"> at thickness <input type="number" id="thickness" value="2"></p>
         <p>Make me <select id="shapeType">
             <option id="shape">a Shape</option>
             <option id="quadrants">Quadrants</option>
         </select></p>
+        <p><input type="text" id="dataurl" readonly> <button id="getdataurl">Get Data URL</button></p>
     </body>
     <script>
         let canvas = document.querySelector("#canvas");
@@ -27,6 +28,14 @@
         let width = document.querySelector("#width");
         let height = document.querySelector("#height");
         let shapeType = document.querySelector("#shapeType");
+        let zoom = document.querySelector("#zoom");
+        let thickness = document.querySelector("#thickness");
+        let dataurl = document.querySelector("#dataurl");
+        let getdataurl = document.querySelector("#getdataurl");
+
+        getdataurl.onclick = () => {
+            dataurl.value = canvas.toDataURL();
+        }
 
         function rad(deg) {
             return deg * (Math.PI / 180);
@@ -36,19 +45,21 @@
             canvas.width = width.value;
             canvas.height = height.value;
             ctx.strokeStyle = "#000";
+            ctx.lineWidth = thickness.value;
             ctx.resetTransform();
+            //ctx.fillRect((canvas.width / 2) - 5, (canvas.height / 2) - 5, 10, 10);
             ctx.translate(canvas.width / 2, canvas.height / 2);
 
             for (let i = 0; i < sides.value; i++) {
                 ctx.beginPath();
                 if (shapeType.selectedOptions[0].id == "shape") {
-                    let size = 100;
-                    let span = 
-                    ctx.moveTo(size, -span);
-                    ctx.lineTo(size, span);
+                    let c = zoom.value / Math.sin(rad(180 - 90 - (360 / sides.value / 2)));
+                    let halfspan = Math.sqrt(c**2 - zoom.value**2);
+                    ctx.moveTo(halfspan, zoom.value);
+                    ctx.lineTo(-halfspan, zoom.value);
                 } else {
                     ctx.moveTo(0, 0);
-                    ctx.lineTo(canvas.width, 0);
+                    ctx.lineTo(0, canvas.height);
                 }
                 ctx.stroke();
                 ctx.rotate(rad(360 / sides.value));
@@ -60,6 +71,8 @@
         height.oninput = update;
         sides.oninput = update;
         shapeType.oninput = update;
+        zoom.oninput = update;
+        thickness.oninput = update;
         update();
     </script>
 </html>
