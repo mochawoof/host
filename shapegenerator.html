@@ -102,7 +102,9 @@
             if (background.selectedOptions[0].id == "shape") {
                 ctx.fill();
             }
-            ctx.stroke();
+            if (thickness.value > 0) {
+                ctx.stroke();
+            }
 
             ctx.translate(-(canvas.width / 2), -(canvas.height / 2));
         }
