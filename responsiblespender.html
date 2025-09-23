@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="pure-min.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+    </head>
+    <style>
+        body {
+            margin: 8px;
+        }
+        canvas {
+            max-width: 800px;
+            height: auto !important;
+        }
+    </style>
+    <body>
+        <p id="currentBalance"></p>
+        <p>New balance: <input type="number" id="newBalance"> <button id="newBalanceGo">Go</button></p>
+        <p>or subtract by: <input type="number" id="subtractBy"> <button id="subtractByGo">Go</button></p>
+        <p><button id="undo">Undo</button></p>
+        <p><canvas id="historyChart"></canvas></p>
+        <p><button id="clear">Clear</button> <button id="resetZoom">Reset Zoom</button></p>
+        <p>Semester ends: <input type="date" id="semesterEnds"> <input type="checkbox" id="semesterAuto"> Auto</p>
+        <p>You can spend:</p>
+        <p id="daily"></p>
+        <p id="biWeekly"></p>
+        <p id="perWeek"></p>
+        <p id="perTwoWeeks"></p>
+        <p id="perMonth"></p>
+    </body>
+    <script src="chart.umd.min.js"></script>
+    <script src="chartjs-plugin-zoom.min.js"></script>
+    <script>
+        let history;
+        let lastHistory;
+        try {
+            history = JSON.parse(localStorage.getItem("history"));
+        } catch (e) {
+            console.warn(e);
+        }
+        if (!history) {
+            history = {
+                dates: [],
+                balances: []
+            };
+        }
+        lastHistory = history;
+
+        function updatesemesterEnds() {
+            if (semesterAuto.checked) {
+                let d = new Date();
+                // greater than 5/11 or any month after and its not over 12/16
+                if ((d.getMonth() == 5 && d.getDate() >= 11) || d.getMonth() > 5 && !(d.getMonth() == 12 && d.getDate() >= 16)) {
+                    // fall semester
+                    semesterEnds.value = d.getFullYear() + "-12-16";
+                } else {
+                    // spring semester
+                    // add 1 to the year to wrap around to next year if still on december of this year
+                    semesterEnds.value = (d.getFullYear() + ((d.getMonth() == 12 && d.getDate() >= 16) ? 1 : 0)) + "5-11";
+                }
+            } else {
+                semesterEnds.value = localStorage.getItem("semesterEnds");
+            }
+        }
+
+        if (localStorage.getItem("semesterManual") == "1") {
+            semesterAuto.checked = false;
+        } else {
+            semesterAuto.checked = true;
+        }
+
+        semesterAuto.onchange = (e) => {
+            localStorage.setItem("semesterManual", (semesterAuto.checked) ? "0" : "1");
+            updatesemesterEnds();
+        }
+
+        semesterEnds.onchange = (e) => {
+            localStorage.setItem("semesterEnds", semesterEnds.value);
+        }
+
+        updatesemesterEnds();
+
+        currentBalance.innerText = "$0";
+        let chart = new Chart(historyChart, {
+            type: "line",
+            data: {
+                labels: [],
+                datasets: [{
+                    label: "My Spending",
+                    data: [],
+                    fill: false,
+                    borderColor: "#0072bb",
+                    tension: 0
+                }]
+            },
+            options: {
+                plugins: {
+                    zoom: {
+                        pan: {
+                            enabled: true,
+                            mode: "xy",
+                            modifierKey: "ctrl"
+                        },
+                        zoom: {
+                            wheel: {
+                                enabled: true
+                            },
+                            pinch: {
+                                enabled: true
+                            },
+                            mode: "xy"
+                        }
+                    }
+                }
+            }
+        });
+
+        clear.onclick = (e) => {
+            if (confirm("Are you sure you really want to delete all your data? If you delete it, you can't get it back.") == true) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+
+        resetZoom.onclick = (e) => {
+            chart.resetZoom("none");
+        }
+
+        function saveHistory() {
+            localStorage.setItem("history", JSON.stringify(history));
+        }
+
+        function clone(json) {
+            return JSON.parse(JSON.stringify(json));
+        }
+
+        newBalanceGo.onclick = (e) => {
+            let n = parseFloat(newBalance.value);
+            lastHistory = clone(history);
+            history.dates.push(Date.now());
+            history.balances.push(n);
+            saveHistory();
+            update();
+        }
+
+        subtractByGo.onclick = (e) => {
+            let n = parseFloat(subtractBy.value);
+            lastHistory = clone(history);
+            if (history.balances.length == 0) {
+                // if empty, add a 0
+                history.dates.push(Date.now());
+                history.balances.push(0);
+            }
+            history.dates.push(Date.now());
+            history.balances.push(history.balances[history.balances.length - 1] - n);
+            saveHistory();
+            update();
+        }
+
+        undo.onclick = (e) => {
+            let tmpHistory = clone(history);
+            history = clone(lastHistory);
+            lastHistory = clone(tmpHistory);
+            saveHistory();
+            update();
+        }
+
+        // round 2 decimals
+        function r2d(n) {
+            return Math.floor(n * 100) / 100;
+        }
+
+        function update() {
+            let labels = [];
+            history.dates.forEach((d) => {
+                let formatted = new Date(d).toLocaleDateString();
+                let lastDate = null;
+                if (labels.length > 0) {
+                    labels.forEach((l) => {
+                        if (lastDate == null) {
+                            lastDate = l;
+                        }
+                        if (!l.includes(":")) {
+                            lastDate = l;
+                        }
+                    });
+                }
+                if (lastDate == formatted) {
+                    // same date, give time instead
+                    formatted = new Date(d).toLocaleTimeString();
+                }
+
+                labels.push(formatted);
+            });
+            console.log(history);
+
+            chart.data.labels = labels;
+            chart.data.datasets[0].data = history.balances;
+            chart.update();
+
+            if (history.balances.length > 0) {
+                currentBalance.innerText = "$" + history.balances[history.balances.length - 1];
+
+                let cd = new Date(semesterEnds.value); // compare date
+                let compared = cd.getTime() - Date.now();
+                let comparedDays = compared / 1000 / 60 / 60 / 24;
+
+                if (compared > 0) {
+                    let balance = history.balances[history.balances.length - 1];
+                    let perDay = balance / comparedDays;
+                    daily.innerText = "$" + r2d(perDay) + " per day";
+                    biWeekly.innerText = "$" + r2d(perDay * (7/2)) + " biweekly";
+                    perWeek.innerText = "$" + r2d(perDay * 7) + " per week";
+                    perTwoWeeks.innerText = "$" + r2d(perDay * (7 * 2)) + " every 2 weeks";
+                    perMonth.innerText = "$" + r2d(perDay * (7*4)) + " every month (roughly)";
+                } else {
+                    daily.innerText = "";
+                    biWeekly.innerText = "";
+                    perWeek.innerText = "";
+                    perTwoWeeks.innerText = "";
+                    perMonth.innerText = "";
+                }
+            }
+        }
+        update();
+    </script>
+</html>
