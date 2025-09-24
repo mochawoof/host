@@ -72,10 +72,12 @@
         semesterAuto.onchange = (e) => {
             localStorage.setItem("semesterManual", (semesterAuto.checked) ? "0" : "1");
             updatesemesterEnds();
+            update();
         }
 
         semesterEnds.onchange = (e) => {
             localStorage.setItem("semesterEnds", semesterEnds.value);
+            update();
         }
 
         updatesemesterEnds();
