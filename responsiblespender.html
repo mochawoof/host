@@ -183,6 +183,7 @@
                 reader.onload = (f) => {
                     let json = JSON.parse(reader.result);
                     history = json;
+                    saveHistory();
                     update();
                 };
                 reader.readAsText(input.files[0]);
