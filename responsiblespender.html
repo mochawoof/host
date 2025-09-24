@@ -20,6 +20,7 @@
         <p><button id="undo">Undo</button></p>
         <p><canvas id="historyChart"></canvas></p>
         <p><button id="clear">Clear</button> <button id="resetZoom">Reset Zoom</button></p>
+        <p><button id="exportt">Export</button> <button id="importt">Import</button></p>
         <p>Semester ends: <input type="date" id="semesterEnds"> <input type="checkbox" id="semesterAuto"> Auto</p>
         <p>You can spend:</p>
         <p id="daily"></p>
@@ -165,6 +166,28 @@
             lastHistory = clone(tmpHistory);
             saveHistory();
             update();
+        }
+
+        exportt.onclick = (e) => {
+            let a = document.createElement("a");
+            a.href = URL.createObjectURL(new Blob([JSON.stringify(history)]));
+            a.download = "export.txt";
+            a.click();
+        }
+
+        importt.onclick = (e) => {
+            let input = document.createElement("input");
+            input.type = "file";
+            input.onchange = (ev) => {
+                let reader = new FileReader();
+                reader.onload = (f) => {
+                    let json = JSON.parse(reader.result);
+                    history = json;
+                    update();
+                };
+                reader.readAsText(input.files[0]);
+            };
+            input.click();
         }
 
         // round 2 decimals
