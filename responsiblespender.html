@@ -10,6 +10,8 @@
         }
         canvas {
             max-width: 800px;
+            aspect-ratio: 1904 / 952 !important;
+            width: 100% !important;
             height: auto !important;
         }
     </style>
@@ -28,6 +30,10 @@
         <p id="perWeek"></p>
         <p id="perTwoWeeks"></p>
         <p id="perMonth"></p>
+        <p>You have spent:</p>
+        <p id="thisWeek"></p>
+        <p id="thisTwoWeeks"></p>
+        <p id="thisMonth"></p>
     </body>
     <script src="chart.umd.min.js"></script>
     <script src="chartjs-plugin-zoom.min.js"></script>
@@ -196,6 +202,29 @@
             return Math.floor(n * 100) / 100;
         }
 
+        function fetchCond(fn) {
+            let fetchedDates = [];
+            let fetchedBalances = [];
+            for (let i = 0; i < history.dates.length; i++) {
+                if (fn(history.dates[i], history.balances[i])) {
+                    fetchedDates.push(history.dates[i]);
+                    fetchedBalances.push(history.balances[i]);
+                }
+            }
+            return [fetchedDates, fetchedBalances];
+        }
+
+        function totalSpendingFor(n) {
+            let balances = fetchCond((d, b) => {return (Date.now() - n) < d})[1];
+            let total = 0;
+            for (let i = 0; i < balances.length; i++) {
+                if (i > 0) {
+                    total += balances[i - 1] - balances[i];
+                }
+            }
+            return total;
+        }
+
         function update() {
             let labels = [];
             history.dates.forEach((d) => {
@@ -239,12 +268,20 @@
                     perWeek.innerText = "$" + r2d(perDay * 7) + " per week";
                     perTwoWeeks.innerText = "$" + r2d(perDay * (7 * 2)) + " every 2 weeks";
                     perMonth.innerText = "$" + r2d(perDay * (7*4)) + " every month (roughly)";
+
+                    thisWeek.innerText = "$" + r2d(totalSpendingFor(1000 * 60 * 60 * 24 * 7)) + " this week";
+                    thisTwoWeeks.innerText = "$" + r2d(totalSpendingFor(1000 * 60 * 60 * 24 * 7 * 2)) + " in the last two weeks";
+                    thisMonth.innerText = "$" + r2d(totalSpendingFor(1000 * 60 * 60 * 24 * 7 * 4)) + " in the last month (roughly)";
                 } else {
                     daily.innerText = "";
                     biWeekly.innerText = "";
                     perWeek.innerText = "";
                     perTwoWeeks.innerText = "";
                     perMonth.innerText = "";
+
+                    thisWeek.innerText = "";
+                    thisTwoWeeks.innerText = "";
+                    thisMonth.innerText = "";
                 }
             }
         }
