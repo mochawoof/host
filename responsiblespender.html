@@ -34,6 +34,7 @@
         <p id="thisWeek"></p>
         <p id="thisTwoWeeks"></p>
         <p id="thisMonth"></p>
+        <p id="thisTotal"></p>
     </body>
     <script src="chart.umd.min.js"></script>
     <script src="chartjs-plugin-zoom.min.js"></script>
@@ -279,6 +280,7 @@
                     thisWeek.innerText = "$" + r2d(totalSpendingFor(1000 * 60 * 60 * 24 * 7)) + " this week";
                     thisTwoWeeks.innerText = "$" + r2d(totalSpendingFor(1000 * 60 * 60 * 24 * 7 * 2)) + " in the last two weeks";
                     thisMonth.innerText = "$" + r2d(totalSpendingFor(1000 * 60 * 60 * 24 * 7 * 4)) + " in the last month (roughly)";
+                    thisTotal.innerText = "$" + r2d(totalSpendingFor(Number.MAX_VALUE)) + " total";
                 } else {
                     daily.innerText = "";
                     biWeekly.innerText = "";
@@ -289,6 +291,7 @@
                     thisWeek.innerText = "";
                     thisTwoWeeks.innerText = "";
                     thisMonth.innerText = "";
+                    thisTotal.innerText = "";
                 }
             }
         }
