@@ -146,7 +146,7 @@
         newBalanceGo.onclick = (e) => {
             let n = parseFloat(newBalance.value);
             lastHistory = clone(history);
-            history.dates.push(Date.now());
+            history.dates.push(new Date().toISOString());
             history.balances.push(n);
             saveHistory();
             update();
@@ -157,10 +157,10 @@
             lastHistory = clone(history);
             if (history.balances.length == 0) {
                 // if empty, add a 0
-                history.dates.push(Date.now());
+                history.dates.push(new Date().toISOString());
                 history.balances.push(0);
             }
-            history.dates.push(Date.now());
+            history.dates.push(new Date().toISOString());
             history.balances.push(history.balances[history.balances.length - 1] - n);
             saveHistory();
             update();
@@ -215,7 +215,7 @@
         }
 
         function totalSpendingFor(n) {
-            let balances = fetchCond((d, b) => {return (Date.now() - n) < d})[1];
+            let balances = fetchCond((d, b) => {return (Date.now() - n) < new Date(d).getTime()})[1];
             let total = 0;
             for (let i = 0; i < balances.length; i++) {
                 if (i > 0) {
