@@ -35,6 +35,8 @@
         <p id="thisTwoWeeks"></p>
         <p id="thisMonth"></p>
         <p id="thisTotal"></p>
+        <p id="sinceCustom"></p>
+        <p><input type="date" id="sinceCustomDate"></p>
     </body>
     <script src="chart.umd.min.js"></script>
     <script src="chartjs-plugin-zoom.min.js"></script>
@@ -89,6 +91,17 @@
         }
 
         updatesemesterEnds();
+
+        function updateSinceCustomDate() {
+            sinceCustomDate.value = localStorage.getItem("sinceCustomDate");
+        }
+
+        sinceCustomDate.onchange = (e) => {
+            localStorage.setItem("sinceCustomDate", sinceCustomDate.value);
+            update();
+        }
+
+        updateSinceCustomDate();
 
         currentBalance.innerText = "$0";
         let chart = new Chart(historyChart, {
@@ -281,6 +294,7 @@
                     thisTwoWeeks.innerText = "$" + r2d(totalSpendingFor(1000 * 60 * 60 * 24 * 7 * 2)) + " in the last two weeks";
                     thisMonth.innerText = "$" + r2d(totalSpendingFor(1000 * 60 * 60 * 24 * 7 * 4)) + " in the last month (roughly)";
                     thisTotal.innerText = "$" + r2d(totalSpendingFor(Number.MAX_VALUE)) + " total";
+                    sinceCustom.innerText = "$" + r2d(totalSpendingFor(Date.now() - new Date(sinceCustomDate.value).getTime())) + " since...";
                 } else {
                     daily.innerText = "";
                     biWeekly.innerText = "";
@@ -292,6 +306,7 @@
                     thisTwoWeeks.innerText = "";
                     thisMonth.innerText = "";
                     thisTotal.innerText = "";
+                    sinceCustom.innerText = "";
                 }
             }
         }
