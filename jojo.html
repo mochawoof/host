@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width"/>
+</head>
+<body>
+<p>Random JoJo's episode picker. Updated for part 6</p>
+<p><button onclick="ora()">Ora</button></p>
+<p id="result"></p>
+</body>
+<script>
+eps = [9, 17, 48, 39, 39, 38];
+function ora() {
+part = Math.floor(math.random() * eps.length);
+result.innerText = "Part " + (part + 1) + " ep " + (Math.floor(math.random() * eps[part]) + 1);
+}
+</script>
+</html>
