@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Today's Wordle Answer</title>
+        <link rel="stylesheet" href="pure-min.css">
+    </head>
+    <style>
+        body {
+            margin: 8px;
+        }
+    </style>
+    <body>
+        <p>
+            <a href="" id="a">Click here for today's Wordle answer...</a>
+        </p>
+    </body>
+    <script>
+        document.querySelector("a").href = "https://www.nytimes.com/svc/wordle/v2/" + new Date().getFullYear() + "-" + (("" + (new Date().getMonth() + 1)).padStart(2, "0")) + "-" + ("" + new Date().getDate()).padStart(2, "0") + ".json";
+    </script>
+</html>
