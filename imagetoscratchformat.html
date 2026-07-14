@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Image to Scratch Format</title>
+    </head>
+    <body>
+        <p><input type="file" id="image" multiple accept="image/*"></p>
+        <p><img id="preview"></p>
+        <p><textarea id="textarea" style="white-space: nowrap;" cols="200"></textarea></p>
+    </body>
+    <script>
+        let image = document.getElementById("image");
+        let preview = document.getElementById("preview");
+        let canvas = document.createElement("canvas");
+        let ctx = canvas.getContext("2d");
+        let textarea = document.getElementById("textarea");
+        image.value = "";
+        textarea.value = "";
+
+        function processFiles(files) {
+            for (let i = 0; i < files.length; i++) {
+                let f = files[i];
+                if (f.type.startsWith("image/")) {
+                    preview.onload = (e) => {
+                        canvas.width = preview.width;
+                        canvas.height = preview.height;
+
+                        ctx.drawImage(preview, 0, 0);
+                        let data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+                        
+                        let pixels = [];
+                        for (let i = 0; i < data.length; i += 4) {
+                            pixels.push([data[i], data[i + 1], data[i + 2]]);
+                        }
+
+                        let str = "";
+                        for (let i = 0; i < pixels.length; i++) {
+                            let p = pixels[i];
+                            str += p[0].toString(16)[0] + p[1].toString(16)[0] + p[2].toString(16)[0];
+                            if (i % canvas.width == 0 && i != 0) {
+                                str += "-";
+                            }
+                        }
+                        textarea.value += str + "\n";
+                    }
+                    preview.src = URL.createObjectURL(f);
+                }
+            }
+        }
+
+        document.ondrop = (e) => {
+            e.preventDefault();
+            image.value = "";
+            textarea.value = "";
+            processFiles([...e.dataTransfer.items].map((item) => item.getAsFile()));
+        }
+
+        document.ondragover = (e) => {
+            e.preventDefault();
+        }
+
+        image.oninput = (e) => {
+            textarea.value = "";
+            processFiles(image.files);
+        }
+    </script>
+</html>
