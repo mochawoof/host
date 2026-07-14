@@ -5,17 +5,23 @@
     </head>
     <body>
         <p><input type="file" id="image" multiple accept="image/*"></p>
-        <p><img id="preview"></p>
+        <p><canvas id="canvas"></canvas></p>
         <p><textarea id="textarea" style="white-space: nowrap;" cols="200"></textarea></p>
     </body>
     <script>
         let image = document.getElementById("image");
-        let preview = document.getElementById("preview");
-        let canvas = document.createElement("canvas");
+        let preview = document.createElement("img");
+        let canvas = document.getElementById("canvas");
         let ctx = canvas.getContext("2d");
         let textarea = document.getElementById("textarea");
         image.value = "";
         textarea.value = "";
+
+        // takes a 16 bit color and converts it to 12 bit
+        function processColor(color) {
+            return Math.round(color / 17) * 17;
+            //return parseInt(color.toString(16)[0] + color.toString(16)[0], 16); old method
+        }
 
         function processFiles(files) {
             for (let i = 0; i < files.length; i++) {
@@ -27,6 +33,12 @@
 
                         ctx.drawImage(preview, 0, 0);
                         let data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+
+                        for (let i = 0; i < data.length; i++) {
+                            data[i] = processColor(data[i]);
+                        }
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        ctx.putImageData(new ImageData(data, canvas.width, canvas.height), 0, 0);
                         
                         let pixels = [];
                         for (let i = 0; i < data.length; i += 4) {
