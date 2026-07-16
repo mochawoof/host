@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Unicode Table</title>
+    </head>
+    <style>
+        body {
+            font-family: sans-serif;
+        }
+
+        table {
+            border: 1px solid #000;
+            border-collapse: collapse;
+        }
+
+        td {
+            border: 1px solid #000;
+            min-width: 100px;
+        }
+    </style>
+    <body>
+        <p>ASCII</p>
+        <table>
+            <tbody id="tbody">
+
+            </tbody>
+        </table>
+    </body>
+    <script>
+        let tbody = document.getElementById("tbody");
+        let tr;
+        for (let i = 0; i < 255; i++) {
+            if (i % 8 == 0) {
+                tr = document.createElement("tr");
+                tbody.appendChild(tr);
+            }
+            let td = document.createElement("td");
+            td.innerText = String.fromCharCode(i);
+            tr.appendChild(td);
+        }
+    </script>
+</html>
