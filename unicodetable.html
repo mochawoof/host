@@ -76,6 +76,7 @@
                     </tbody>
                 </table>
             </div>
+            <p>Use # in the search box to search by character code.</br>Use ## to search by hex.</p>
         </div>
         <table>
             <tbody id="tbody">
@@ -40737,7 +40738,7 @@ So 	Symbol, Other`.split("\n");
                     break;
                 }
             }
-            if (nodeIndex) {
+            if (nodeIndex != undefined) {
                 return tbody.childNodes[Math.floor(nodeIndex / 8) + 1].childNodes[nodeIndex - (8 * Math.floor(nodeIndex / 8))];
             } else {
                 return -1;
@@ -40791,40 +40792,55 @@ So 	Symbol, Other`.split("\n");
         let currentResult = 0;
 
         go.onclick = () => {
-            let search = searchbox.value;
+            let search = searchbox.value.trim();
 
             results = [];
             currentResult = 0;
             for (let i = 0; i < dataLines.length; i++) {
                 let code = parseInt(dataLines[i][0], 16);
+                let thisLineSearchResult = 0; // 0 = nothing, 1 = unshift, 2 = push
                 for (let j = 0; j < dataLines[i].length; j++) {
                     let item = dataLines[i][j];   
 
-                    if (j == 2) {
+                    if (search.startsWith("##")) {
+                        if ("##" + dataLines[i][0] == search) {
+                            thisLineSearchResult = 1;
+                        }
+                    } else if (search.startsWith("#")) {
+                        if ("#" + code == search) {
+                            thisLineSearchResult = 1;
+                        }
+                    } else if (j == 2) {
                         // search actual category name
                         let category = getCategory(item);
                         if (category != -1) {
                             if (category == search) {
-                                results.unshift(code);
+                                thisLineSearchResult = 1;
                             } else if (category.includes(search)) {
-                                results.push(code);
+                                thisLineSearchResult = 2;
                             } else if (category.toLowerCase() == search.toLowerCase()) {
-                                results.unshift(code);
+                                thisLineSearchResult = 1;
                             } else if (category.toLowerCase().includes(search.toLowerCase())) {
-                                results.push(code);
+                                thisLineSearchResult = 2;
                             }
                         }
                     } else {
                         if (item == search) {
-                            results.unshift(code);
+                            thisLineSearchResult = 1;
                         } else if (item.includes(search)) {
-                            results.push(code);
+                            thisLineSearchResult = 2;
                         } else if (item.toLowerCase() == search.toLowerCase()) {
-                            results.unshift(code);
+                            thisLineSearchResult = 1;
                         } else if (item.toLowerCase().includes(search.toLowerCase())) {
-                            results.push(code);
+                            thisLineSearchResult = 2;
                         }
                     }
+                }
+
+                if (thisLineSearchResult == 1) {
+                    results.unshift(code);
+                } else if (thisLineSearchResult == 2) {
+                    results.push(code);
                 }
             }
             
